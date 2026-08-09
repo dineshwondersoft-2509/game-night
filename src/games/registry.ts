@@ -1,5 +1,6 @@
 import type { GameDefinition } from './types'
 import { ticTacToeGame } from './tic-tac-toe'
+import { dotsAndBoxesGame } from './dots-and-boxes'
 
 const comingSoon: GameDefinition[] = [
   {
@@ -42,7 +43,7 @@ const comingSoon: GameDefinition[] = [
   },
 ]
 
-const games: GameDefinition[] = [ticTacToeGame, ...comingSoon]
+const games: GameDefinition[] = [ticTacToeGame, dotsAndBoxesGame, ...comingSoon]
 
 export function listGames(): GameDefinition[] {
   return games

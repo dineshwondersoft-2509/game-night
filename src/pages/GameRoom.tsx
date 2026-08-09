@@ -85,7 +85,7 @@ export function GameRoom() {
     if (isFull || game.status !== 'waiting') {
       return (
         <ErrorState
-          title="This game already has two players."
+          title="This room is already full."
           message="Ask your friend for a new invite link."
         />
       )

@@ -111,10 +111,10 @@ export async function fetchGameBundle(roomCode: string): Promise<GameBundle | nu
 export function friendlyError(message: string): string {
   const lower = message.toLowerCase()
   if (lower.includes('not found')) return 'Game not found'
-  if (lower.includes('full')) return 'This game already has two players.'
+  if (lower.includes('full')) return 'This room is already full.'
   if (lower.includes('expired') || lower.includes('abandoned')) return 'This game has ended.'
   if (lower.includes('not your turn')) return 'It is not your turn.'
-  if (lower.includes('occupied')) return 'That cell is already taken.'
+  if (lower.includes('line occupied') || lower.includes('occupied')) return 'That spot is already taken.'
   if (lower.includes('not active')) return 'This game is not active yet.'
   if (lower.includes('not authenticated')) return 'Could not connect. Please refresh.'
   if (lower.includes('nickname')) return 'Please enter a nickname.'
