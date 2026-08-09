@@ -21,17 +21,15 @@ describe('dots-and-boxes gameLogic', () => {
   })
 
   it('claims a box and keeps turn', () => {
-    // 2x2 dots => 1 box. Fill 3 sides then 4th claims.
-    let state = createInitialState(1)
+    // 2x2 boxes. Complete the top-left box.
+    let state = createInitialState(2)
     state = applyLine(state, { orient: 'h', index: 0 }, 'A').state // top
-    state = applyLine(state, { orient: 'h', index: 1 }, 'B').state // bottom
+    state = applyLine(state, { orient: 'h', index: 2 }, 'B').state // bottom
     state = applyLine(state, { orient: 'v', index: 0 }, 'A').state // left
     const result = applyLine(state, { orient: 'v', index: 1 }, 'B') // right completes
     expect(result.claimed).toBe(1)
     expect(result.keepTurn).toBe(true)
     expect(result.state.boxes[0]).toBe('B')
-    expect(isFinished(result.state)).toBe(true)
-    expect(getWinner(result.state)).toBe('B')
   })
 
   it('detects draw when scores tie', () => {

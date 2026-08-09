@@ -3,9 +3,10 @@ interface CellProps {
   highlight: boolean
   disabled: boolean
   onClick: () => void
+  className?: string
 }
 
-export function Cell({ value, highlight, disabled, onClick }: CellProps) {
+export function Cell({ value, highlight, disabled, onClick, className = '' }: CellProps) {
   return (
     <button
       type="button"
@@ -13,9 +14,10 @@ export function Cell({ value, highlight, disabled, onClick }: CellProps) {
       disabled={disabled || value !== null}
       aria-label={value ? `Cell ${value}` : 'Empty cell'}
       className={[
-        'aspect-square rounded-2xl text-4xl sm:text-5xl font-display font-bold',
+        'aspect-square rounded-2xl font-display font-bold',
         'flex items-center justify-center transition-all duration-150',
         'border-2 active:scale-95',
+        className || 'text-4xl sm:text-5xl',
         highlight
           ? 'bg-mint border-teal text-teal-dark scale-[1.02] shadow-md'
           : 'bg-surface border-surface-2 text-ink hover:border-teal/40',

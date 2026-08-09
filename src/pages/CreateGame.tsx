@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { GamePicker } from '../components/GamePicker'
+import { NicknameField } from '../components/NicknameField'
+import { SizePicker } from '../components/SizePicker'
 import { usePlayer } from '../hooks/usePlayer'
 import { createGame, friendlyError } from '../services/gameService'
 import type { GameDefinition } from '../games/types'
@@ -16,10 +18,17 @@ export function CreateGame() {
   const available = listAvailableGames()
   const [step, setStep] = useState<Step>(nickname ? 'choose' : 'name')
   const [selected, setSelected] = useState<GameDefinition | null>(available[0] ?? null)
+  const [boardSize, setBoardSize] = useState(available[0]?.defaultSize ?? 3)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [createdCode, setCreatedCode] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (selected?.defaultSize) {
+      setBoardSize(selected.defaultSize)
+    }
+  }, [selected?.id, selected?.defaultSize])
 
   if (!ready) return <LoadingScreen message="Getting ready…" />
 
@@ -33,7 +42,7 @@ export function CreateGame() {
     setBusy(true)
     setError(null)
     try {
-      const game = await createGame(selected.id, nickname.trim())
+      const game = await createGame(selected.id, nickname.trim(), { size: boardSize })
       rememberRoom(game.room_code)
       setCreatedCode(game.room_code)
       setStep('ready')
@@ -54,6 +63,11 @@ export function CreateGame() {
     }
   }
 
+  const sizeSummary =
+    selected?.sizeMode === 'fixed' || selected?.sizeMode === 'input'
+      ? ` · ${boardSize}×${boardSize}`
+      : ''
+
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 py-8">
       <Link to="/" className="mb-6 text-sm font-bold text-teal-dark hover:underline">
@@ -63,19 +77,8 @@ export function CreateGame() {
       {step === 'name' && (
         <section className="space-y-6 animate-[fadeIn_250ms_ease-out]">
           <h1 className="font-display text-3xl font-bold text-ink">What&apos;s your name?</h1>
-          <input
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            maxLength={24}
-            placeholder="Nickname"
-            className="w-full rounded-2xl border-2 border-surface-2 bg-surface px-4 py-3 text-lg font-semibold outline-none focus:border-teal"
-            autoFocus
-          />
-          <Button
-            fullWidth
-            disabled={!nickname.trim()}
-            onClick={() => setStep('choose')}
-          >
+          <NicknameField value={nickname} onChange={setNickname} autoFocus />
+          <Button fullWidth disabled={!nickname.trim()} onClick={() => setStep('choose')}>
             Continue
           </Button>
         </section>
@@ -84,15 +87,26 @@ export function CreateGame() {
       {step === 'choose' && (
         <section className="space-y-6 animate-[fadeIn_250ms_ease-out]">
           <div>
-            <p className="text-sm font-bold text-ink-muted">Playing as {nickname}</p>
-            <h1 className="mt-1 font-display text-3xl font-bold text-ink">Choose a game</h1>
+            <h1 className="font-display text-3xl font-bold text-ink">Choose a game</h1>
           </div>
+          <NicknameField
+            value={nickname}
+            onChange={setNickname}
+            label="Your name"
+            allowEditToggle
+          />
           <GamePicker
             selectedId={selected?.id ?? null}
-            onSelect={setSelected}
+            onSelect={(game) => {
+              setSelected(game)
+              setBoardSize(game.defaultSize ?? 3)
+            }}
           />
+          {selected && (
+            <SizePicker game={selected} value={boardSize} onChange={setBoardSize} />
+          )}
           {error && <p className="text-sm font-semibold text-coral">{error}</p>}
-          <Button fullWidth disabled={!selected || busy} onClick={onCreate}>
+          <Button fullWidth disabled={!selected || !nickname.trim() || busy} onClick={onCreate}>
             {busy ? 'Creating…' : 'Create Game'}
           </Button>
         </section>
@@ -103,7 +117,11 @@ export function CreateGame() {
           <h1 className="font-display text-3xl font-bold text-ink">Your game is ready!</h1>
           <div className="rounded-2xl border border-surface-2 bg-surface p-5 shadow-sm space-y-3">
             <p className="text-ink-muted">
-              Game: <span className="font-bold text-ink">{selected.name}</span>
+              Game:{' '}
+              <span className="font-bold text-ink">
+                {selected.name}
+                {sizeSummary}
+              </span>
             </p>
             <p className="text-ink-muted">
               Room ID:{' '}

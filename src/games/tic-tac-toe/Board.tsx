@@ -1,5 +1,5 @@
 import type { GameBoardProps } from '../types'
-import { asBoard, getWinningLine } from './gameLogic'
+import { asState, getWinningLine } from './gameLogic'
 import { Cell } from './Cell'
 
 export function Board({
@@ -10,28 +10,32 @@ export function Board({
   status,
   onMove,
 }: GameBoardProps) {
-  const board = asBoard(state)
+  const board = asState(state)
   const winningLine = status === 'finished' ? getWinningLine(board) : null
   const locked = disabled || !isMyTurn || status !== 'active'
+  const textSize =
+    board.size >= 7 ? 'text-lg sm:text-xl' : board.size >= 5 ? 'text-2xl sm:text-3xl' : 'text-4xl sm:text-5xl'
 
   return (
     <div
       className={[
-        'grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-sm mx-auto p-2',
+        'grid gap-1.5 sm:gap-2 w-full max-w-md mx-auto p-2',
         status === 'active' ? 'animate-[fadeIn_300ms_ease-out]' : '',
         winner ? 'animate-[celebrate_500ms_ease-out]' : '',
       ]
         .filter(Boolean)
         .join(' ')}
+      style={{ gridTemplateColumns: `repeat(${board.size}, minmax(0, 1fr))` }}
       role="grid"
-      aria-label="Tic-Tac-Toe board"
+      aria-label={`Tic-Tac-Toe ${board.size} by ${board.size} board`}
     >
-      {board.map((value, index) => (
+      {board.cells.map((value, index) => (
         <Cell
           key={index}
           value={value}
           highlight={winningLine?.includes(index) ?? false}
           disabled={locked}
+          className={textSize}
           onClick={() => onMove({ position: index })}
         />
       ))}

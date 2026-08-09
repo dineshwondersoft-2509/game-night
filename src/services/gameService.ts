@@ -45,14 +45,27 @@ export async function ensureAnonymousSession(): Promise<string> {
   return data.user.id
 }
 
-export async function createGame(gameType: string, nickname: string): Promise<GameRow> {
+export async function createGame(
+  gameType: string,
+  nickname: string,
+  options: { size?: number } = {},
+): Promise<GameRow> {
   await ensureAnonymousSession()
   const { data, error } = await supabase.rpc('create_game', {
     p_game_type: gameType,
     p_nickname: nickname.trim(),
+    p_options: options,
   })
   if (error) throw new Error(error.message)
   return data as GameRow
+}
+
+export async function updateNickname(roomCode: string, nickname: string): Promise<void> {
+  const { error } = await supabase.rpc('update_nickname', {
+    p_room_code: normalizeRoomCode(roomCode),
+    p_nickname: nickname.trim(),
+  })
+  if (error) throw new Error(error.message)
 }
 
 export async function joinGame(roomCode: string, nickname: string): Promise<GameRow> {
@@ -117,6 +130,7 @@ export function friendlyError(message: string): string {
   if (lower.includes('line occupied') || lower.includes('occupied')) return 'That spot is already taken.'
   if (lower.includes('not active')) return 'This game is not active yet.'
   if (lower.includes('not authenticated')) return 'Could not connect. Please refresh.'
-  if (lower.includes('nickname')) return 'Please enter a nickname.'
+  if (lower.includes('nickname')) return 'Please enter a valid nickname.'
+  if (lower.includes('invalid size') || lower.includes('size')) return 'Choose a valid board size.'
   return message || 'Something went wrong. Please try again.'
 }

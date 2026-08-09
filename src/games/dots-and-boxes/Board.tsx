@@ -26,9 +26,11 @@ export function Board({
   const board = asState(state)
   const { size, h, v, boxes } = board
   const locked = disabled || !isMyTurn || status !== 'active'
-  const cell = 56
-  const gap = 14
+  const maxBoard = 320
+  const gap = size >= 6 ? 8 : size >= 4 ? 10 : 14
+  const cell = Math.max(22, Math.floor((maxBoard - (size + 1) * gap) / size))
   const boardPx = size * cell + (size + 1) * gap
+  const lineThick = size >= 6 ? 8 : 10
 
   const scoreA = countBoxes(board, 'A')
   const scoreB = countBoxes(board, 'B')
@@ -52,7 +54,6 @@ export function Board({
         role="grid"
         aria-label="Dots and Boxes board"
       >
-        {/* Boxes fill */}
         {boxes.map((owner, i) => {
           const row = Math.floor(i / size)
           const col = i % size
@@ -73,12 +74,11 @@ export function Board({
           )
         })}
 
-        {/* Horizontal lines */}
         {h.map((owner, index) => {
           const row = Math.floor(index / size)
           const col = index % size
           const left = gap + col * (cell + gap)
-          const top = row * (cell + gap) + gap / 2 - 5
+          const top = row * (cell + gap) + gap / 2 - lineThick / 2
           return (
             <button
               key={`h-${index}`}
@@ -94,18 +94,17 @@ export function Board({
                 left,
                 top,
                 width: cell,
-                height: 10,
+                height: lineThick,
                 backgroundColor: owner ? SEAT_COLOR[owner] : '#4a635c',
               }}
             />
           )
         })}
 
-        {/* Vertical lines */}
         {v.map((owner, index) => {
           const row = Math.floor(index / (size + 1))
           const col = index % (size + 1)
-          const left = col * (cell + gap) + gap / 2 - 5
+          const left = col * (cell + gap) + gap / 2 - lineThick / 2
           const top = gap + row * (cell + gap)
           return (
             <button
@@ -121,7 +120,7 @@ export function Board({
               style={{
                 left,
                 top,
-                width: 10,
+                width: lineThick,
                 height: cell,
                 backgroundColor: owner ? SEAT_COLOR[owner] : '#4a635c',
               }}
@@ -129,16 +128,15 @@ export function Board({
           )
         })}
 
-        {/* Dots */}
         {Array.from({ length: (size + 1) * (size + 1) }, (_, i) => {
           const row = Math.floor(i / (size + 1))
           const col = i % (size + 1)
-          const left = col * (cell + gap) + gap / 2 - 5
-          const top = row * (cell + gap) + gap / 2 - 5
+          const left = col * (cell + gap) + gap / 2 - 4
+          const top = row * (cell + gap) + gap / 2 - 4
           return (
             <div
               key={`dot-${i}`}
-              className="absolute h-2.5 w-2.5 rounded-full bg-ink"
+              className="absolute h-2 w-2 rounded-full bg-ink"
               style={{ left, top }}
             />
           )
@@ -146,7 +144,7 @@ export function Board({
       </div>
 
       <p className="text-center text-xs font-semibold text-ink-muted">
-        Claim lines. Complete a box to play again.
+        {size}×{size} boxes · Claim lines. Complete a box to play again.
       </p>
     </div>
   )

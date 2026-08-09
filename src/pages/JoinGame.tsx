@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { LoadingScreen } from '../components/LoadingScreen'
+import { NicknameField } from '../components/NicknameField'
 import { usePlayer } from '../hooks/usePlayer'
 import { friendlyError, joinGame } from '../services/gameService'
 import { normalizeRoomCode } from '../utils/roomCode'
@@ -58,17 +59,7 @@ export function JoinGame() {
             </span>
           </p>
         )}
-        <div>
-          <label className="mb-1 block text-sm font-bold text-ink-muted">What&apos;s your name?</label>
-          <input
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            maxLength={24}
-            placeholder="Nickname"
-            className="w-full rounded-2xl border-2 border-surface-2 bg-surface px-4 py-3 text-lg font-semibold outline-none focus:border-teal"
-            autoFocus
-          />
-        </div>
+        <NicknameField value={nickname} onChange={setNickname} autoFocus />
         {error && <p className="text-sm font-semibold text-coral">{error}</p>}
         <Button
           fullWidth

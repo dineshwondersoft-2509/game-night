@@ -1,6 +1,7 @@
 import {
   DEFAULT_SIZE,
   boxCount,
+  clampSize,
   horizontalCount,
   verticalCount,
   type DotsAndBoxesMove,
@@ -13,11 +14,12 @@ function emptyLines(count: number): LineOwner[] {
 }
 
 export function createInitialState(size = DEFAULT_SIZE): DotsAndBoxesState {
+  const n = clampSize(size)
   return {
-    size,
-    h: emptyLines(horizontalCount(size)),
-    v: emptyLines(verticalCount(size)),
-    boxes: emptyLines(boxCount(size)),
+    size: n,
+    h: emptyLines(horizontalCount(n)),
+    v: emptyLines(verticalCount(n)),
+    boxes: emptyLines(boxCount(n)),
   }
 }
 

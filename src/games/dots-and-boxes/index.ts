@@ -9,6 +9,7 @@ import {
   parseMove,
 } from './gameLogic'
 import { Board } from './Board'
+import { DEFAULT_SIZE, MAX_SIZE, MIN_SIZE } from './types'
 
 export const dotsAndBoxesGame: GameDefinition = {
   id: 'dots-and-boxes',
@@ -22,7 +23,12 @@ export const dotsAndBoxesGame: GameDefinition = {
   icon: '▦',
   seatSymbols: ['A', 'B'],
   getSeatLabel: (seat) => seat,
-  initialState: () => createInitialState(),
+  sizeMode: 'input',
+  minSize: MIN_SIZE,
+  maxSize: MAX_SIZE,
+  defaultSize: DEFAULT_SIZE,
+  sizeLabel: 'Rows of boxes',
+  initialState: (options) => createInitialState(options?.size ?? DEFAULT_SIZE),
   validateMove: (state, move, seat, currentTurn) => {
     const parsed = parseMove(move)
     if (!parsed) return false

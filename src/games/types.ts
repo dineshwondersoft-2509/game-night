@@ -23,6 +23,10 @@ export interface GameBoardProps {
   onMove: (payload: Record<string, unknown>) => void
 }
 
+export interface GameCreateOptions {
+  size?: number
+}
+
 export interface GameDefinition {
   id: string
   name: string
@@ -35,7 +39,14 @@ export interface GameDefinition {
   icon: string
   seatSymbols: string[]
   getSeatLabel: (seat: string) => string
-  initialState: () => unknown
+  /** fixed = 3/5/7 buttons; input = type number of box rows */
+  sizeMode?: 'fixed' | 'input' | 'none'
+  sizeOptions?: number[]
+  minSize?: number
+  maxSize?: number
+  defaultSize?: number
+  sizeLabel?: string
+  initialState: (options?: GameCreateOptions) => unknown
   validateMove: (state: unknown, move: unknown, seat: string, currentTurn: string) => boolean
   applyMove: (state: unknown, move: unknown, seat: string) => unknown
   getWinner: (state: unknown) => string | 'draw' | null

@@ -7,6 +7,7 @@ import {
   leaveGame as leaveGameRpc,
   makeMove as makeMoveRpc,
   requestRematch as requestRematchRpc,
+  updateNickname as updateNicknameRpc,
 } from '../services/gameService'
 import { useRealtimeGame } from './useRealtimeGame'
 import { getGame } from '../games/registry'
@@ -100,6 +101,14 @@ export function useGameRoom(roomCode: string | undefined, playerId: string | nul
     return run(() => leaveGameRpc(roomCode))
   }, [roomCode, run])
 
+  const updateNickname = useCallback(
+    (nickname: string) => {
+      if (!roomCode) return Promise.resolve(null)
+      return run(() => updateNicknameRpc(roomCode, nickname))
+    },
+    [roomCode, run],
+  )
+
   const isMyTurn =
     !!me &&
     bundle?.game.status === 'active' &&
@@ -124,6 +133,7 @@ export function useGameRoom(roomCode: string | undefined, playerId: string | nul
     makeMove,
     requestRematch,
     leaveGame,
+    updateNickname,
     refresh,
     clearError: () => setActionError(null),
   }

@@ -4,6 +4,7 @@ import { Button } from '../components/Button'
 import { ConnectionBanner } from '../components/ConnectionBanner'
 import { ErrorState } from '../components/ErrorState'
 import { LoadingScreen } from '../components/LoadingScreen'
+import { NicknameField } from '../components/NicknameField'
 import { PlayerList } from '../components/PlayerList'
 import { RoomActions } from '../components/RoomActions'
 import { RoomHeader } from '../components/RoomHeader'
@@ -22,6 +23,9 @@ export function GameRoom() {
   const [joinBusy, setJoinBusy] = useState(false)
   const [joinError, setJoinError] = useState<string | null>(null)
   const [showConnectedFlash, setShowConnectedFlash] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [nameDraft, setNameDraft] = useState('')
+  const [nameBusy, setNameBusy] = useState(false)
 
   useEffect(() => {
     if (room.connection === 'connected') {
@@ -116,14 +120,7 @@ export function GameRoom() {
             <p className="text-sm font-bold text-ink-muted">{gameDef.name}</p>
             <h1 className="font-display text-3xl font-bold text-ink">What&apos;s your name?</h1>
           </div>
-          <input
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            maxLength={24}
-            placeholder="Nickname"
-            className="w-full rounded-2xl border-2 border-surface-2 bg-surface px-4 py-3 text-lg font-semibold outline-none focus:border-teal"
-            autoFocus
-          />
+          <NicknameField value={nickname} onChange={setNickname} autoFocus />
           {joinError && <p className="text-sm font-semibold text-coral">{joinError}</p>}
           <Button fullWidth disabled={!nickname.trim() || joinBusy} onClick={onJoin}>
             {joinBusy ? 'Joining…' : 'Join Game'}
@@ -161,9 +158,54 @@ export function GameRoom() {
       <RoomHeader gameName={gameDef.name} />
 
       {room.me && (
-        <p className="text-center text-sm font-bold text-ink-muted">
-          You are {gameDef.getSeatLabel(room.me.symbol)}
-        </p>
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-center text-sm font-bold text-ink-muted">
+            You are {gameDef.getSeatLabel(room.me.symbol)}
+          </p>
+          {!editingName ? (
+            <button
+              type="button"
+              className="text-sm font-bold text-teal-dark hover:underline"
+              onClick={() => {
+                setNameDraft(room.me?.nickname ?? nickname)
+                setEditingName(true)
+              }}
+            >
+              Change name ({room.me.nickname})
+            </button>
+          ) : (
+            <div className="w-full max-w-sm space-y-2">
+              <NicknameField value={nameDraft} onChange={setNameDraft} label="Change your name" />
+              <div className="flex gap-2">
+                <Button
+                  fullWidth
+                  disabled={!nameDraft.trim() || nameBusy}
+                  onClick={() => {
+                    void (async () => {
+                      setNameBusy(true)
+                      const ok = await room.updateNickname(nameDraft.trim())
+                      if (ok !== null) {
+                        setNickname(nameDraft.trim())
+                        setEditingName(false)
+                      }
+                      setNameBusy(false)
+                    })()
+                  }}
+                >
+                  {nameBusy ? 'Saving…' : 'Save'}
+                </Button>
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  disabled={nameBusy}
+                  onClick={() => setEditingName(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       <PlayerList

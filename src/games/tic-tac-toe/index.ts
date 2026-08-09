@@ -1,19 +1,19 @@
 import type { GameDefinition } from '../types'
 import {
-  asBoard,
+  asState,
   checkWinner,
-  createInitialBoard,
+  createInitialState,
   isValidMove,
   makeMove,
   parseMove,
 } from './gameLogic'
 import { Board } from './Board'
-import type { CellValue } from './types'
+import { DEFAULT_TTT_SIZE, TTT_SIZES, type CellValue } from './types'
 
 export const ticTacToeGame: GameDefinition = {
   id: 'tic-tac-toe',
   name: 'Tic-Tac-Toe',
-  description: 'Classic 3x3. Get three in a row.',
+  description: 'Classic grid. Get a full line.',
   tagline: 'Quick game',
   minPlayers: 2,
   maxPlayers: 2,
@@ -22,11 +22,15 @@ export const ticTacToeGame: GameDefinition = {
   icon: '✕○',
   seatSymbols: ['X', 'O'],
   getSeatLabel: (seat) => seat,
-  initialState: () => createInitialBoard(),
+  sizeMode: 'fixed',
+  sizeOptions: [...TTT_SIZES],
+  defaultSize: DEFAULT_TTT_SIZE,
+  sizeLabel: 'Board size',
+  initialState: (options) => createInitialState(options?.size ?? DEFAULT_TTT_SIZE),
   validateMove: (state, move, seat, currentTurn) => {
     const parsed = parseMove(move)
     if (!parsed) return false
-    const board = asBoard(state)
+    const board = asState(state)
     const finished = checkWinner(board) !== null
     return isValidMove(
       board,
@@ -39,9 +43,9 @@ export const ticTacToeGame: GameDefinition = {
   applyMove: (state, move, seat) => {
     const parsed = parseMove(move)
     if (!parsed) throw new Error('Invalid move')
-    return makeMove(asBoard(state), parsed.position, seat as 'X' | 'O')
+    return makeMove(asState(state), parsed.position, seat as 'X' | 'O')
   },
-  getWinner: (state) => checkWinner(asBoard(state)),
-  isFinished: (state) => checkWinner(asBoard(state)) !== null,
+  getWinner: (state) => checkWinner(asState(state)),
+  isFinished: (state) => checkWinner(asState(state)) !== null,
   Board,
 }
