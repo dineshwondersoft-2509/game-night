@@ -1,6 +1,7 @@
 import type { GameDefinition } from './types'
 import { ticTacToeGame } from './tic-tac-toe'
 import { dotsAndBoxesGame } from './dots-and-boxes'
+import { rockPaperScissorsGame } from './rock-paper-scissors'
 
 const comingSoon: GameDefinition[] = [
   {
@@ -23,29 +24,14 @@ const comingSoon: GameDefinition[] = [
     isFinished: () => false,
     Board: () => null,
   },
-  {
-    id: 'rock-paper-scissors',
-    name: 'Rock Paper Scissors',
-    description: 'Best of luck, best of three.',
-    tagline: 'Coming soon',
-    minPlayers: 2,
-    maxPlayers: 2,
-    status: 'coming_soon',
-    accent: '#ea580c',
-    icon: '✊',
-    seatSymbols: ['A', 'B'],
-    getSeatLabel: (seat) => seat,
-    sizeMode: 'none',
-    initialState: () => null,
-    validateMove: () => false,
-    applyMove: (state) => state,
-    getWinner: () => null,
-    isFinished: () => false,
-    Board: () => null,
-  },
 ]
 
-const games: GameDefinition[] = [ticTacToeGame, dotsAndBoxesGame, ...comingSoon]
+const games: GameDefinition[] = [
+  ticTacToeGame,
+  dotsAndBoxesGame,
+  rockPaperScissorsGame,
+  ...comingSoon,
+]
 
 export function listGames(): GameDefinition[] {
   return games

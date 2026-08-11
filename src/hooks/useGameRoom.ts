@@ -109,10 +109,16 @@ export function useGameRoom(roomCode: string | undefined, playerId: string | nul
     [roomCode, run],
   )
 
-  const isMyTurn =
-    !!me &&
-    bundle?.game.status === 'active' &&
-    bundle.game.current_turn === me.symbol
+  const isMyTurn = (() => {
+    if (!me || bundle?.game.status !== 'active') return false
+    if (bundle.game.game_type === 'rock-paper-scissors') {
+      const board = bundle.game.board as { choiceA?: unknown; choiceB?: unknown } | null
+      if (!board || typeof board !== 'object') return true
+      const mine = me.symbol === 'A' ? board.choiceA : board.choiceB
+      return mine == null || mine === ''
+    }
+    return bundle.game.current_turn === me.symbol
+  })()
 
   const iRequestedRematch = !!(me && bundle?.game.rematch_requests?.[me.symbol])
 

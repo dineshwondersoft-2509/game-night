@@ -67,6 +67,24 @@ export function TurnStatus({
     )
   }
 
+  const custom = gameDef.renderStatus?.({
+    yourSeat,
+    currentTurn,
+    winner,
+    status,
+    players: players.map((p) => ({
+      playerId: p.playerId,
+      nickname: p.nickname,
+      symbol: p.symbol,
+      lastSeenAt: p.lastSeenAt,
+    })),
+  })
+  if (custom) {
+    return (
+      <p className="text-center font-display text-lg font-semibold text-ink-muted">{custom}</p>
+    )
+  }
+
   if (status === 'active' && currentTurn) {
     if (yourSeat === currentTurn) {
       return (

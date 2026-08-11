@@ -11,6 +11,7 @@ export function SizePicker({ game, value, onChange }: SizePickerProps) {
 
   if (game.sizeMode === 'fixed') {
     const options = game.sizeOptions ?? []
+    const bestOf = game.sizeDisplay === 'bestOf'
     return (
       <div className="space-y-2">
         <p className="text-sm font-bold text-ink-muted">{game.sizeLabel ?? 'Size'}</p>
@@ -29,7 +30,7 @@ export function SizePicker({ game, value, onChange }: SizePickerProps) {
                     : 'border-surface-2 bg-surface text-ink hover:border-teal/40',
                 ].join(' ')}
               >
-                {size}×{size}
+                {bestOf ? `Best of ${size}` : `${size}×${size}`}
               </button>
             )
           })}
