@@ -2,6 +2,7 @@ import type { GameDefinition } from './types'
 import { ticTacToeGame } from './tic-tac-toe'
 import { dotsAndBoxesGame } from './dots-and-boxes'
 import { rockPaperScissorsGame } from './rock-paper-scissors'
+import { memoryMatchGame } from './memory-match'
 
 const comingSoon: GameDefinition[] = [
   {
@@ -30,6 +31,7 @@ const games: GameDefinition[] = [
   ticTacToeGame,
   dotsAndBoxesGame,
   rockPaperScissorsGame,
+  memoryMatchGame,
   ...comingSoon,
 ]
 

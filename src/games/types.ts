@@ -47,7 +47,7 @@ export interface GameDefinition {
   defaultSize?: number
   sizeLabel?: string
   /** How size options are shown in the create UI */
-  sizeDisplay?: 'grid' | 'bestOf'
+  sizeDisplay?: 'grid' | 'bestOf' | 'pairs'
   initialState: (options?: GameCreateOptions) => unknown
   validateMove: (state: unknown, move: unknown, seat: string, currentTurn: string) => boolean
   applyMove: (state: unknown, move: unknown, seat: string) => unknown

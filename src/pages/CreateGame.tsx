@@ -66,9 +66,11 @@ export function CreateGame() {
   const sizeSummary =
     selected?.sizeDisplay === 'bestOf'
       ? ` · Best of ${boardSize}`
-      : selected?.sizeMode === 'fixed' || selected?.sizeMode === 'input'
-        ? ` · ${boardSize}×${boardSize}`
-        : ''
+      : selected?.sizeDisplay === 'pairs'
+        ? ` · ${boardSize} pairs`
+        : selected?.sizeMode === 'fixed' || selected?.sizeMode === 'input'
+          ? ` · ${boardSize}×${boardSize}`
+          : ''
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 py-8">
