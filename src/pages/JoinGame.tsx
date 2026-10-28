@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../components/Button'
+import { AuthErrorScreen } from '../components/AuthErrorScreen'
 import { LoadingScreen } from '../components/LoadingScreen'
 import { NicknameField } from '../components/NicknameField'
 import { usePlayer } from '../hooks/usePlayer'
@@ -10,12 +11,13 @@ import { normalizeRoomCode } from '../utils/roomCode'
 export function JoinGame() {
   const { roomId } = useParams()
   const navigate = useNavigate()
-  const { nickname, setNickname, ready, rememberRoom } = usePlayer()
+  const { nickname, setNickname, ready, error: authError, retryAuth, rememberRoom } = usePlayer()
   const [code, setCode] = useState(roomId ? normalizeRoomCode(roomId) : '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   if (!ready) return <LoadingScreen message="Getting ready…" />
+  if (authError) return <AuthErrorScreen message={authError} onRetry={retryAuth} />
 
   const onJoin = async () => {
     if (!nickname.trim() || !code.trim()) return

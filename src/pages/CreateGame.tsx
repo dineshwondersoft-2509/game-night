@@ -8,13 +8,14 @@ import { usePlayer } from '../hooks/usePlayer'
 import { createGame, friendlyError } from '../services/gameService'
 import type { GameDefinition } from '../games/types'
 import { listAvailableGames } from '../games/registry'
+import { AuthErrorScreen } from '../components/AuthErrorScreen'
 import { LoadingScreen } from '../components/LoadingScreen'
 
 type Step = 'name' | 'choose' | 'ready'
 
 export function CreateGame() {
   const navigate = useNavigate()
-  const { nickname, setNickname, ready, rememberRoom } = usePlayer()
+  const { nickname, setNickname, ready, error: authError, retryAuth, rememberRoom } = usePlayer()
   const available = listAvailableGames()
   const [step, setStep] = useState<Step>(nickname ? 'choose' : 'name')
   const [selected, setSelected] = useState<GameDefinition | null>(available[0] ?? null)
@@ -31,6 +32,7 @@ export function CreateGame() {
   }, [selected?.id, selected?.defaultSize])
 
   if (!ready) return <LoadingScreen message="Getting ready…" />
+  if (authError) return <AuthErrorScreen message={authError} onRetry={retryAuth} />
 
   const inviteUrl =
     createdCode && typeof window !== 'undefined'

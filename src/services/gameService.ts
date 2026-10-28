@@ -1,3 +1,9 @@
+import {
+  AUTH_TIMEOUT_MS,
+  clearExpiredStoredSession,
+  isAccessTokenValid,
+  withTimeout,
+} from '../lib/authSession'
 import { supabase } from '../lib/supabase'
 import type { GameBundle, GameRow } from '../lib/database.types'
 import { normalizeRoomCode } from '../utils/roomCode'
@@ -32,17 +38,43 @@ function mapBundle(raw: unknown): GameBundle | null {
   }
 }
 
-export async function ensureAnonymousSession(): Promise<string> {
-  const { data: existing } = await supabase.auth.getSession()
-  if (existing.session?.user?.id) {
-    return existing.session.user.id
-  }
+async function signInFreshAnonymousSession(): Promise<string> {
+  clearExpiredStoredSession()
+  await supabase.auth.signOut({ scope: 'local' })
 
-  const { data, error } = await supabase.auth.signInAnonymously()
+  const { data, error } = await withTimeout(
+    supabase.auth.signInAnonymously(),
+    AUTH_TIMEOUT_MS,
+    'Could not connect to the game server. Check your internet and try again.',
+  )
   if (error || !data.user) {
     throw new Error(error?.message ?? 'Could not start anonymous session')
   }
   return data.user.id
+}
+
+export async function ensureAnonymousSession(): Promise<string> {
+  try {
+    const { data: existing, error } = await withTimeout(
+      supabase.auth.getSession(),
+      AUTH_TIMEOUT_MS,
+      'Could not connect to the game server. Check your internet and try again.',
+    )
+    if (error) throw error
+
+    const session = existing.session
+    if (
+      session?.user?.id &&
+      session.access_token &&
+      isAccessTokenValid(session.access_token)
+    ) {
+      return session.user.id
+    }
+  } catch {
+    // Stale session or slow refresh — start a fresh anonymous session.
+  }
+
+  return signInFreshAnonymousSession()
 }
 
 export async function createGame(
@@ -130,6 +162,12 @@ export function friendlyError(message: string): string {
   if (lower.includes('line occupied') || lower.includes('occupied')) return 'That spot is already taken.'
   if (lower.includes('not active')) return 'This game is not active yet.'
   if (lower.includes('not authenticated')) return 'Could not connect. Please refresh.'
+  if (lower.includes('timed out') || lower.includes('timeout') || lower.includes('abort')) {
+    return 'Connection timed out. Please refresh and try again.'
+  }
+  if (lower.includes('failed to fetch') || lower.includes('network')) {
+    return 'Could not reach the game server. Check your internet and try again.'
+  }
   if (lower.includes('nickname')) return 'Please enter a valid nickname.'
   if (lower.includes('invalid size') || lower.includes('size')) return 'Choose a valid board size.'
   return message || 'Something went wrong. Please try again.'

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ensureAnonymousSession } from '../services/gameService'
+import { ensureAnonymousSession, friendlyError } from '../services/gameService'
 import { supabase } from '../lib/supabase'
 
 const NICKNAME_KEY = 'game_night_nickname'
@@ -10,32 +10,45 @@ export function usePlayer() {
   const [nickname, setNicknameState] = useState(() => localStorage.getItem(NICKNAME_KEY) ?? '')
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [authAttempt, setAuthAttempt] = useState(0)
+
+  const connect = useCallback(async (cancelled: () => boolean) => {
+    setReady(false)
+    setError(null)
+    try {
+      const id = await ensureAnonymousSession()
+      if (!cancelled()) {
+        setPlayerId(id)
+        setReady(true)
+      }
+    } catch (err) {
+      if (!cancelled()) {
+        setError(friendlyError(err instanceof Error ? err.message : 'Auth failed'))
+        setReady(true)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
-    ;(async () => {
-      try {
-        const id = await ensureAnonymousSession()
-        if (!cancelled) {
-          setPlayerId(id)
-          setReady(true)
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Auth failed')
-          setReady(true)
-        }
-      }
-    })()
+    void connect(() => cancelled)
+    return () => {
+      cancelled = true
+    }
+  }, [connect, authAttempt])
 
+  useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       setPlayerId(session?.user?.id ?? null)
     })
 
     return () => {
-      cancelled = true
       sub.subscription.unsubscribe()
     }
+  }, [])
+
+  const retryAuth = useCallback(() => {
+    setAuthAttempt((value) => value + 1)
   }, [])
 
   const setNickname = useCallback((value: string) => {
@@ -64,6 +77,7 @@ export function usePlayer() {
     setNickname,
     ready,
     error,
+    retryAuth,
     rememberRoom,
     lastRoom,
   }

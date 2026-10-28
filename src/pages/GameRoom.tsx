@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { ConnectionBanner } from '../components/ConnectionBanner'
 import { ErrorState } from '../components/ErrorState'
+import { AuthErrorScreen } from '../components/AuthErrorScreen'
 import { LoadingScreen } from '../components/LoadingScreen'
 import { NicknameField } from '../components/NicknameField'
 import { PlayerList } from '../components/PlayerList'
@@ -18,7 +19,7 @@ import type { GamePlayerView } from '../games/types'
 export function GameRoom() {
   const { roomId } = useParams()
   const navigate = useNavigate()
-  const { playerId, nickname, setNickname, ready, rememberRoom } = usePlayer()
+  const { playerId, nickname, setNickname, ready, error: authError, retryAuth, rememberRoom } = usePlayer()
   const room = useGameRoom(roomId, playerId)
   const [joinBusy, setJoinBusy] = useState(false)
   const [joinError, setJoinError] = useState<string | null>(null)
@@ -47,7 +48,15 @@ export function GameRoom() {
     return `${window.location.origin}/game/${roomId.toUpperCase()}`
   }, [roomId])
 
-  if (!ready || room.loading) {
+  if (!ready) {
+    return <LoadingScreen message="Loading game…" />
+  }
+
+  if (authError) {
+    return <AuthErrorScreen message={authError} onRetry={retryAuth} />
+  }
+
+  if (room.loading) {
     return <LoadingScreen message="Loading game…" />
   }
 

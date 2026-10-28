@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { AUTH_TIMEOUT_MS, clearExpiredStoredSession, fetchWithTimeout } from './authSession'
 
 const url = import.meta.env.VITE_SUPABASE_URL
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -9,6 +10,8 @@ if (!url || !anonKey) {
   )
 }
 
+clearExpiredStoredSession()
+
 export const supabase = createClient(url || 'https://placeholder.supabase.co', anonKey || 'placeholder-key', {
   auth: {
     persistSession: true,
@@ -16,4 +19,9 @@ export const supabase = createClient(url || 'https://placeholder.supabase.co', a
     detectSessionInUrl: false,
     storageKey: 'game-night-auth',
   },
+  global: {
+    fetch: fetchWithTimeout,
+  },
 })
+
+export { AUTH_TIMEOUT_MS }
